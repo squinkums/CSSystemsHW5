@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <numeric>
+#include <algorithm>
 
 std::vector<double> baseline_latencies(int nreq, Request_generator* req)
 {
@@ -32,7 +33,7 @@ std::vector<double> baseline_performance(Request_generator* req)
 int main()
 {
 	auto my_generator = new Request_generator();
-	//my_generator->generate(50000);
+	my_generator->generate(50000);
 	auto perform = baseline_performance(my_generator);
 	std::cout << perform[0] << '\n' << perform[1];
 }

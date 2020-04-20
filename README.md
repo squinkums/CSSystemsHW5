@@ -45,6 +45,6 @@ Interestingly, the latency/throughput is further reduced to (7,174.52). This is 
 
 
 ### System
-The above measurements is taken in a windows environment, the measurements in a linux context is ()
+The above measurements is taken in a windows environment, the measurements in a linux context is (9, 225.734)
 
 
