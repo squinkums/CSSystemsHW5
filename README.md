@@ -31,7 +31,20 @@ The 95th-percentile latency is 10 milliseconds and the mean throughput is  124.8
 ## Sensitivity
 Note: before each test we first prepare the cache with enough pre-loaded key-val pairs to keep consistency.
 ### maxmem
+varying maxmem is tricky in that to maintain the hit rate of 0.8, we need to adjust either the key_pool or the value sizes as well. For me,  I adjusted the key_pool in proportion to the maxmem adjustment. Perhaps not surprisingly, the latency and throughput did not change much (11, 123.76). 
 
+Adjusting the value sizes will perhaps change the measurements, but I did not test it that way.
 ### max_load_factor
+Theoretically, adjusting max_load_factor will produce a few extreme outliers, when the request is waiting for the server cache to resize. Otherwise decreasing max_load_factor will theoretically decrease the collision chance and hence reduce latency. This is indeed true in our measurements taken when max_load_factor is 
+
 
 ### evictor
+Not using an evictor( i.e. the cache becomes static when maxmem reached) is not practical but a curious way to measure performance. 
+
+Interestingly, the latency/throughput is further reduced to (7,174.52). This is perhaps the 'bottomline' time it takes to process a request since the cache literally does not need to perform any operation. 
+
+
+### System
+The above measurements is taken in a windows environment, the measurements in a linux context is ()
+
+
