@@ -1,0 +1,17 @@
+#include <iostream>
+#include <cassert>
+#include <chrono>
+#include <thread>
+#include <cpprest/http_client.h>
+#include <cpprest/filestream.h>
+#include "cache.hh"
+#include "fifo_evictor.hh"
+#include <random>
+#include <string>
+#include <vector>
+
+using namespace utility;                                                                                                                                                                          
+using namespace web;                                                                                                                                                                                           
+using namespace web::http;                                                                                                                                                                                       
+using namespace web::http::client;          
+using namespace concurrency::streams;

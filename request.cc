@@ -136,8 +136,8 @@ void etc_workload(Cache* my_cache, int limit, std::vector<std::string>& keys_a, 
     }
     switch(n) {
       case 1: auto get = my_cache->get(key, 3); delete[] get; break;
-      case 2; auto del = my_cache->del(key); delete[] del; break;
-      case 3; my_cache->set(key, my_value, 3);
+      case 2: auto del = my_cache->del(key); delete[] del; break;
+      case 3: my_cache->set(key, my_value, 3);
     }
   }
   delete[] my_value;
