@@ -30,7 +30,13 @@ std::string create_random_string(int length) {
   return result;
 }
 
-void etc_workload(Cache* my_cache, int limit, std::vector<std::string>& keys_a, std::vector<std::string>& keys_b, int& hits, int& misses) {
+void etc_workload(Cache* my_cache,
+		  int limit,
+		  std::vector<std::string>& keys_a,
+		  std::vector<std::string>& keys_b,
+		  int& hits,
+		  int& misses,
+		  std::vector<std::chrono::milliseconds>& times) {
   
   //random number for key pool                                                                                                                                                                                                         
   std::random_device rd_1;                                                                                                                                                                                                                   
@@ -81,7 +87,11 @@ void etc_workload(Cache* my_cache, int limit, std::vector<std::string>& keys_a, 
       n = 3;                                                                                                                                                                                                                                 
     }                                                                                                                                                                                                                                        
     switch(n) {                                                                                                                                                                                                                              
-      case 1: auto get = my_cache->get(key, 3);
+      case 1: auto t1 = std::chrono::high_resolution_clock::now();
+	      auto get = my_cache->get(key, 3);
+	      auto t2 = std::chrono::high_resolution_clock::now();
+	      auto duration = std::chrono::duration_cast<std::chrono::milliseconds> (t2 - t1);
+	      times.push_back(duration);
 	      if(get == nullptr) {
 		misses += 1;
 	      }
@@ -90,7 +100,13 @@ void etc_workload(Cache* my_cache, int limit, std::vector<std::string>& keys_a, 
 	      }
 	      delete[] get;
 	      break;                                                                                                                                                                         
-      case 2: auto del = my_cache->del(key); delete[] del; break;                                                                                                                                                                            
+      case 2: auto t1 = std::chrono::high_resolution_clock::now();
+	      auto del = my_cache->del(key);
+	      auto t2 = std::chrono::high_resolution_clock::now();
+	      auto duration = std::chrono::duration_cast<std::chrono::milliseconds> (t2 - t1);
+	      times.push_back(duration);
+	      delete[] del;
+	      break;                                                                                                                                                                            
       case 3: std::random_device rd_v;
 	      std::mt19937 gen_v(rd_v());
 	      std::uniform_int_distribution dis_v(1, 10);
@@ -99,11 +115,37 @@ void etc_workload(Cache* my_cache, int limit, std::vector<std::string>& keys_a, 
 	      if(r > 4) {
 		v *= 100;
 	      }
-	      auto const value = new char[v]
-	      my_cache->set(key, value, v);                                                                                                                                                                                               
+	      auto const value = new char[v];
+	      auto t1 = std::chrono::high_resolution_clock::now();	
+	      my_cache->set(key, value, v);
+	      auto t2 = std::chrono::high_resolution_clock::now();
+	      auto duration = std::chrono::high_resolution_clock::now();
+	      times.push_back(duration);
     }                                                                                                                                                                                                                                        
   }
   my_cache->reset();                                                                                                                                                                                                                         
+}
+
+std::vector<float> baseline_frequencies(int nreqs, std::vector<std::chrono::milliseconds>& times) {
+  std::vector<float> result;
+  std::random_shuffle(times.begin(), times.end());
+  for(int i = 0, i < nreqs, i++) {
+    result.push_back(static_cast<float>(times[i]));
+  }
+  return result;
+}
+
+void baseline_performance(std::vector<std::chrono::milliseconds>& times, int requests) {
+  std::sort(times.begin(), times.end());
+  int percentile_place = static_cast<int>(0.95 * static_cast<float>(requests));
+  float value = static_cast<float>(times[percentile_place]);
+  std::cout << "95th percentile latency: " << value << std::endl;
+  float result = 0;
+  for(const auto i : times) {
+    result += static_cast<float>(i);
+  }
+  float mean = result / static_cast<float>(requests);
+  std::cout << "Mean throughput: " << mean << std::endl;
 }
 
 int main() {
@@ -163,9 +205,21 @@ int main() {
   }
   int hits = 0;
   int misses = 0;
-  etc_workload(my_cache, 100, set_a, set_b, hits, misses);
+  std::vector<std::chrono::milliseconds> times;
+  int requests = 100;
+  etc_workload(my_cache, requests, set_a, set_b, hits, misses, times);
+  int nreqs;
+  std::cout << "Enter nreqs: ";
+  std::cin >> nreqs;
+  std::vector<float> latencies = baseline_latencies(nreqs, times);
+  std::cout << "Latencies: ";
+  for(const auto &i : latencies) {
+    std::cout << i << " ";
+  }
+  std::cout << std::endl;
   int total = hits + misses;
   int hit_rate = static_cast<float>(hits) / static_cast<float>(total);
+  std::cout << "Hit rate: " << hit_rate << std::endl;
+  baseline_performance(times, requests);
   return 0;
 }
-
